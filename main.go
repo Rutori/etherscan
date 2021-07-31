@@ -16,9 +16,10 @@ func main() {
 		blockAmount int
 	)
 
-	flag.StringVar(&apiKey, "key", "", "etherscan.io api key")
-	flag.IntVar(&apiRate, "max api rate", 5, "limits api rates")
-	flag.IntVar(&blockAmount, "block amount", 100, "selects the amount of blocks that will be queried")
+	flag.StringVar(&apiKey, "k", "", "etherscan.io api key")
+	flag.IntVar(&apiRate, "r", 5, "limits api rates")
+	flag.IntVar(&blockAmount, "a", 100, "selects the amount of blocks that will be queried")
+	flag.Parse()
 
 	switch {
 	case apiKey == "":
