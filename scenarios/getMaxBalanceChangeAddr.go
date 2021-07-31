@@ -77,6 +77,7 @@ func GetMaxBalanceChangeAddr(ctx context.Context, apiKey string, rps, blockRange
 	return topAddr, nil
 }
 
+// queryBlock fetches a block and puts it into the outgoing channel
 func queryBlock(ctx context.Context, api *etherclient.API, out chan<- *entities.Block, blockTag string) error {
 	block, err := etherscanio.GetBlock(ctx, api, blockTag)
 	if err != nil {
@@ -87,6 +88,8 @@ func queryBlock(ctx context.Context, api *etherclient.API, out chan<- *entities.
 	return nil
 }
 
+// calculateAmounts constantly recieves blocks, calculates the change to the overall transactions data
+// and after the inbound channel is closed writes the result into the output channel
 func calculateAmounts(in <-chan *entities.Block, out chan<- map[string]int64) error {
 	amounts := make(map[string]int64)
 	for block := range in {
@@ -99,9 +102,11 @@ func calculateAmounts(in <-chan *entities.Block, out chan<- map[string]int64) er
 	}
 
 	out <- amounts
+
 	return nil
 }
 
+// addAmounts adds the new transaction data into the main map
 func addAmounts(everyone map[string]int64, delta map[string]int64) {
 	for addr, change := range delta {
 		_, exists := everyone[addr]

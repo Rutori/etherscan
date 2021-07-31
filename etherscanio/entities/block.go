@@ -1,10 +1,11 @@
 package entities
 
+// Block describes etherium block data
 type Block struct {
-	Number       string         `json:"number"`
 	Transactions []*Transaction `json:"transactions"`
 }
 
+// GetSpending returns a map that contains addresses and their balance change in this block
 func (b *Block) GetSpending() (map[string]int64, error) {
 	wallets := make(map[string]int64)
 	for i := range b.Transactions {

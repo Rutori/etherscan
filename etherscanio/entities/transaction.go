@@ -6,24 +6,17 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Transaction describes transaction data from etherscan API
 type Transaction struct {
-	BlockHash        string `json:"blockHash"`
-	BlockNumber      string `json:"blockNumber"`
-	From             string `json:"from"`
-	Gas              string `json:"gas"`
-	GasPrice         string `json:"gasPrice"`
-	Hash             string `json:"hash"`
-	Input            string `json:"input"`
-	Nonce            string `json:"nonce"`
-	To               string `json:"to"`
-	TransactionIndex string `json:"transactionIndex"`
-	Value            string `json:"value"`
-	Type             string `json:"type"`
-	V                string `json:"v"`
-	R                string `json:"r"`
-	S                string `json:"s"`
+	From     string `json:"from"`
+	Gas      string `json:"gas"`
+	GasPrice string `json:"gasPrice"`
+	Input    string `json:"input"`
+	To       string `json:"to"`
+	Value    string `json:"value"`
 }
 
+// CalculateCost returns transaction value and the amount of gas spent
 func (t *Transaction) CalculateCost() (gas int64, value int64, err error) {
 	gasAmount, err := strconv.ParseInt(t.Gas[2:], 16, 64)
 	if err != nil {

@@ -12,12 +12,14 @@ import (
 
 const queryTimeout = 20 * time.Second
 
+// API queries the etherscan API
 type API struct {
 	apiKey            string
 	httpClient        *http.Client
 	connectionControl *throttler
 }
 
+// NewAPI creates new API instance
 func NewAPI(key string, rps int) *API {
 	return &API{
 		apiKey:            key,
@@ -26,6 +28,7 @@ func NewAPI(key string, rps int) *API {
 	}
 }
 
+// Query makes a request to api
 func (c *API) Query(ctx context.Context, endpoint string) ([]byte, error) {
 	c.connectionControl.allow()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s&apikey=%s", endpoint, c.apiKey), nil)
@@ -46,6 +49,7 @@ func (c *API) Query(ctx context.Context, endpoint string) ([]byte, error) {
 	return body, nil
 }
 
+// getHTTPClient creates a new http.Client without keepalives and reasonable timeout (unlike the default http client)
 func getHTTPClient() *http.Client {
 	return &http.Client{
 		Transport: &http.Transport{
