@@ -1,9 +1,7 @@
 package entities
 
 import (
-	"strconv"
-
-	"github.com/pkg/errors"
+	"math/big"
 )
 
 // Transaction describes transaction data from etherscan API
@@ -17,21 +15,17 @@ type Transaction struct {
 }
 
 // CalculateCost returns transaction value and the amount of gas spent
-func (t *Transaction) CalculateCost() (gas int64, value int64, err error) {
-	gasAmount, err := strconv.ParseInt(t.Gas[2:], 16, 64)
-	if err != nil {
-		return 0, 0, errors.WithStack(err)
-	}
+func (t *Transaction) CalculateCost() (gas *big.Int, value *big.Int) {
+	gasAmount := new(big.Int)
+	gasAmount.SetString(t.Gas[2:], 16)
 
-	gasPrice, err := strconv.ParseInt(t.GasPrice[2:], 16, 64)
-	if err != nil {
-		return 0, 0, errors.WithStack(err)
-	}
+	gasPrice := new(big.Int)
+	gasPrice.SetString(t.GasPrice[2:], 16)
 
-	value, err = strconv.ParseInt(t.Value[2:], 16, 64)
-	if err != nil {
-		return 0, 0, errors.WithStack(err)
-	}
+	value = new(big.Int)
+	value.SetString(t.Value[2:], 16)
 
-	return gasAmount * gasPrice, value, nil
+	gas = new(big.Int).Mul(gasPrice, gasAmount)
+
+	return gas, value
 }

@@ -31,6 +31,13 @@ func NewAPI(key string, rps int) *API {
 // Query makes a request to api
 func (c *API) Query(ctx context.Context, endpoint string) ([]byte, error) {
 	c.connectionControl.allow()
+	select {
+	case <-ctx.Done():
+		return nil, nil
+
+	default:
+	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s&apikey=%s", endpoint, c.apiKey), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)

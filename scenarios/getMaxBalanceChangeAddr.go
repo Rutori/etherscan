@@ -3,6 +3,7 @@ package scenarios
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"strconv"
 
 	"etherscan_parse/etherscanio"
@@ -36,7 +37,7 @@ func GetMaxBalanceChangeAddr(ctx context.Context, apiKey string, rps, blockRange
 		})
 	}
 
-	amounts := make(chan map[string]int64)
+	amounts := make(chan map[string]*big.Int, 1)
 	errc := make(chan error)
 	go func() {
 		errc <- calculateAmounts(blocksRecv, amounts)
@@ -56,17 +57,12 @@ func GetMaxBalanceChangeAddr(ctx context.Context, apiKey string, rps, blockRange
 		return "", err
 	}
 
-	var (
-		topAmount int64
-		topAddr   string
-	)
+	var topAddr string
+
+	topAmount := new(big.Int).SetInt64(0)
 
 	for addr, amount := range <-amounts {
-		if amount < 0 {
-			amount = amount * -1
-		}
-
-		if amount <= topAmount {
+		if amount.CmpAbs(topAmount) < 1 {
 			continue
 		}
 
@@ -90,8 +86,8 @@ func queryBlock(ctx context.Context, api *etherclient.API, out chan<- *entities.
 
 // calculateAmounts constantly recieves blocks, calculates the change to the overall transactions data
 // and after the inbound channel is closed writes the result into the output channel
-func calculateAmounts(in <-chan *entities.Block, out chan<- map[string]int64) error {
-	amounts := make(map[string]int64)
+func calculateAmounts(in <-chan *entities.Block, out chan<- map[string]*big.Int) error {
+	amounts := make(map[string]*big.Int)
 	for block := range in {
 		blockChanges, err := block.GetSpending()
 		if err != nil {
@@ -107,7 +103,7 @@ func calculateAmounts(in <-chan *entities.Block, out chan<- map[string]int64) er
 }
 
 // addAmounts adds the new transaction data into the main map
-func addAmounts(everyone map[string]int64, delta map[string]int64) {
+func addAmounts(everyone map[string]*big.Int, delta map[string]*big.Int) {
 	for addr, change := range delta {
 		_, exists := everyone[addr]
 		if !exists {
@@ -115,6 +111,6 @@ func addAmounts(everyone map[string]int64, delta map[string]int64) {
 			continue
 		}
 
-		everyone[addr] += delta[addr]
+		everyone[addr].Add(everyone[addr], delta[addr])
 	}
 }
