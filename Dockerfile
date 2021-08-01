@@ -6,4 +6,4 @@ COPY . /workdir
 RUN make
 
 ENTRYPOINT ["bin/app"]
-CMD ["-k=${APIKEY}", "-r=5","-a=100"]
+CMD ["-k=${APIKEY}", "-r=${RATE}","-a=${BLOCKAMOUNT}"]
