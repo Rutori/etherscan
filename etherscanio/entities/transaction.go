@@ -9,7 +9,6 @@ type Transaction struct {
 	From     string `json:"from"`
 	Gas      string `json:"gas"`
 	GasPrice string `json:"gasPrice"`
-	Input    string `json:"input"`
 	To       string `json:"to"`
 	Value    string `json:"value"`
 }
