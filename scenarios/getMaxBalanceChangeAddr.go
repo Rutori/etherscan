@@ -80,8 +80,14 @@ func queryBlock(ctx context.Context, api *etherclient.API, out chan<- *entities.
 		return err
 	}
 
-	out <- block
-	return nil
+	select {
+	case <-ctx.Done():
+		return nil
+
+	case out <- block:
+		return nil
+	}
+
 }
 
 // calculateAmounts constantly recieves blocks, calculates the change to the overall transactions data

@@ -2,11 +2,13 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
+	"etherscan_parse/etherscanio/entities"
 	"github.com/pkg/errors"
 )
 
@@ -33,7 +35,7 @@ func (c *API) Query(ctx context.Context, endpoint string) ([]byte, error) {
 	c.connectionControl.allow()
 	select {
 	case <-ctx.Done():
-		return nil, nil
+		return nil, ctx.Err()
 
 	default:
 	}
@@ -53,6 +55,11 @@ func (c *API) Query(ctx context.Context, endpoint string) ([]byte, error) {
 		return nil, errors.WithStack(err)
 	}
 
+	err = checkError(body)
+	if err != nil {
+		return nil, err
+	}
+
 	return body, nil
 }
 
@@ -64,4 +71,18 @@ func getHTTPClient() *http.Client {
 		},
 		Timeout: queryTimeout,
 	}
+}
+
+func checkError(body []byte) error {
+	err := new(entities.Error)
+	jsonErr := json.Unmarshal(body, &err)
+	if jsonErr != nil {
+		return nil
+	}
+
+	if err.Status == "0" {
+		return err
+	}
+
+	return nil
 }
