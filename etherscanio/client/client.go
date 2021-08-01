@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -55,8 +56,16 @@ func (c *API) Query(ctx context.Context, endpoint string) ([]byte, error) {
 		return nil, errors.WithStack(err)
 	}
 
+	// We can try and override rate limit error (that happens to unknown reasons)
 	err = checkError(body)
-	if err != nil {
+	switch {
+	case err == nil:
+
+	case err.Error() == "Max rate limit reached":
+		waitRandomTimeout(c.connectionControl.timeout)
+		return c.Query(ctx, endpoint)
+
+	default:
 		return nil, err
 	}
 
@@ -85,4 +94,9 @@ func checkError(body []byte) error {
 	}
 
 	return nil
+}
+
+// waitRandomTimeout takes max timeout t and sleeps a random amount of time between 0 and t
+func waitRandomTimeout(t time.Duration) {
+	time.Sleep(time.Duration(float32(t) * rand.Float32()))
 }

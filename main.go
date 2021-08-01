@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
+	"time"
 
 	"etherscan_parse/scenarios"
 )
@@ -35,6 +37,7 @@ func main() {
 		return
 	}
 
+	rand.Seed(time.Now().UnixNano())
 	addr, err := scenarios.GetMaxBalanceChangeAddr(context.Background(), apiKey, apiRate, blockAmount)
 	if err != nil {
 		log.Fatalf("%+v", err)
